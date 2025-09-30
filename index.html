@@ -58,6 +58,27 @@
             gap: 1rem;
         }
         
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
         button {
             background-color: var(--primary);
             color: white;
@@ -525,6 +546,20 @@
             display: none;
         }
         
+        /* Real-time Updates */
+        .update-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--info);
+            color: white;
+            padding: 1rem;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 1001;
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
             .form-row {
@@ -552,16 +587,31 @@
             .teams-grid, .events-list {
                 grid-template-columns: 1fr;
             }
+            
+            .update-notification {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Update Notification -->
+    <div class="update-notification" id="updateNotification">
+        <i class="fas fa-sync-alt"></i> Dados atualizados automaticamente
+    </div>
+
     <!-- Header -->
     <header>
         <div class="container">
             <div class="header-content">
                 <h1>Sistema de Pontuação - Gincana Escolar</h1>
                 <div class="user-info">
+                    <div class="connection-status">
+                        <div class="status-dot"></div>
+                        <span>Sincronizado</span>
+                    </div>
                     <span id="userStatus">Visitante</span>
                     <button id="adminLoginBtn">Acesso Admin</button>
                     <button class="logout-btn" id="logoutBtn" style="display: none;">Sair</button>
@@ -699,6 +749,9 @@
             <div class="card">
                 <div class="card-header">
                     <span>Atividades Recentes</span>
+                    <button class="btn-secondary" onclick="forceSync()">
+                        <i class="fas fa-sync-alt"></i> Sincronizar Agora
+                    </button>
                 </div>
                 <div id="recentActivities">
                     <!-- Será preenchido via JavaScript -->
@@ -853,6 +906,8 @@
         let teams = {};
         let events = [];
         let currentUser = null;
+        let lastUpdateTime = 0;
+        let syncInterval;
         
         // Credenciais de administrador
         const adminCredentials = {
@@ -877,26 +932,116 @@
             '3': 'Ensino Médio'
         };
         
-        // Carregar dados do localStorage se existirem
+        // Chave única para armazenamento compartilhado
+        const STORAGE_KEY = 'gincana_escolar_shared_data';
+        
+        // Carregar dados do localStorage compartilhado
         function loadData() {
-            const savedTeams = localStorage.getItem('gincanaTeams');
-            const savedEvents = localStorage.getItem('gincanaEvents');
-            
-            if (savedTeams) {
-                teams = JSON.parse(savedTeams);
+            try {
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    teams = data.teams || {};
+                    events = data.events || [];
+                    lastUpdateTime = data.lastUpdateTime || 0;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                initializeSampleData();
             }
-            
-            if (savedEvents) {
-                events = JSON.parse(savedEvents);
-            }
-            
             updateUI();
         }
         
-        // Salvar dados no localStorage
+        // Salvar dados no localStorage compartilhado
         function saveData() {
-            localStorage.setItem('gincanaTeams', JSON.stringify(teams));
-            localStorage.setItem('gincanaEvents', JSON.stringify(events));
+            try {
+                const data = {
+                    teams: teams,
+                    events: events,
+                    lastUpdateTime: Date.now()
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                
+                // Disparar evento customizado para notificar outras abas/janelas
+                window.dispatchEvent(new CustomEvent('gincanaDataUpdated', {
+                    detail: { timestamp: Date.now() }
+                }));
+            } catch (error) {
+                console.error('Erro ao salvar dados:', error);
+            }
+        }
+        
+        // Verificar se há atualizações
+        function checkForUpdates() {
+            try {
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    if (data.lastUpdateTime > lastUpdateTime) {
+                        // Dados foram atualizados por outra instância
+                        teams = data.teams || {};
+                        events = data.events || {};
+                        lastUpdateTime = data.lastUpdateTime;
+                        updateUI();
+                        showUpdateNotification();
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao verificar atualizações:', error);
+            }
+        }
+        
+        // Mostrar notificação de atualização
+        function showUpdateNotification() {
+            const notification = document.getElementById('updateNotification');
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Forçar sincronização manual
+        function forceSync() {
+            checkForUpdates();
+            showUpdateNotification();
+        }
+        
+        // Iniciar sistema de sincronização
+        function startSync() {
+            // Verificar atualizações a cada 2 segundos
+            syncInterval = setInterval(checkForUpdates, 2000);
+            
+            // Ouvir eventos de outras abas/janelas
+            window.addEventListener('gincanaDataUpdated', function(event) {
+                if (event.detail.timestamp > lastUpdateTime) {
+                    checkForUpdates();
+                }
+            });
+            
+            // Ouvir eventos de storage (outras abas)
+            window.addEventListener('storage', function(event) {
+                if (event.key === STORAGE_KEY && event.newValue) {
+                    try {
+                        const data = JSON.parse(event.newValue);
+                        if (data.lastUpdateTime > lastUpdateTime) {
+                            teams = data.teams || {};
+                            events = data.events || {};
+                            lastUpdateTime = data.lastUpdateTime;
+                            updateUI();
+                            showUpdateNotification();
+                        }
+                    } catch (error) {
+                        console.error('Erro ao processar atualização:', error);
+                    }
+                }
+            });
+        }
+        
+        // Parar sistema de sincronização
+        function stopSync() {
+            if (syncInterval) {
+                clearInterval(syncInterval);
+            }
         }
         
         // Atualizar a interface do usuário
@@ -1434,6 +1579,7 @@
                 });
                 
                 loadData();
+                startSync();
             } else {
                 // Login falhou
                 document.getElementById('errorMessage').style.display = 'block';
@@ -1458,6 +1604,9 @@
             document.querySelectorAll('.admin-only').forEach(el => {
                 el.style.display = 'none';
             });
+            
+            // Parar sincronização
+            stopSync();
             
             // Voltar para a aba de adicionar pontos
             switchTab('add-points');
@@ -1496,7 +1645,7 @@
         
         // Inicializar dados de exemplo se não houver dados salvos
         function initializeSampleData() {
-            if (!localStorage.getItem('gincanaTeams') || !localStorage.getItem('gincanaEvents')) {
+            if (!localStorage.getItem(STORAGE_KEY)) {
                 // Criar eventos padrão
                 events = [
                     {
@@ -1644,6 +1793,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             initializeSampleData();
             loadData();
+            startSync();
         });
     </script>
 </body>
