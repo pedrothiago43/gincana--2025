@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Pontuação - Gincana Escolar</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <style>
         :root {
             --primary: #4CAF50;
@@ -558,6 +559,12 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: none;
             z-index: 1001;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
         
         /* Responsive */
@@ -599,7 +606,7 @@
 <body>
     <!-- Update Notification -->
     <div class="update-notification" id="updateNotification">
-        <i class="fas fa-sync-alt"></i> Dados atualizados automaticamente
+        <i class="fas fa-sync-alt"></i> Sistema atualizado! Novos dados disponíveis.
     </div>
 
     <!-- Header -->
@@ -610,7 +617,7 @@
                 <div class="user-info">
                     <div class="connection-status">
                         <div class="status-dot"></div>
-                        <span>Sincronizado</span>
+                        <span id="connectionText">Conectado</span>
                     </div>
                     <span id="userStatus">Visitante</span>
                     <button id="adminLoginBtn">Acesso Admin</button>
@@ -624,12 +631,12 @@
     <div class="container">
         <!-- Success Message -->
         <div class="success-message" id="successMessage">
-            Pontos adicionados com sucesso!
+            <i class="fas fa-check-circle"></i> Pontos adicionados com sucesso!
         </div>
         
         <!-- Warning Message -->
         <div class="warning-message" id="warningMessage">
-            Pontos descontados com sucesso!
+            <i class="fas fa-exclamation-triangle"></i> Pontos descontados com sucesso!
         </div>
         
         <!-- Tabs -->
@@ -644,41 +651,50 @@
         
         <!-- Add Points Tab (Public) -->
         <div class="tab-content active" id="add-points-tab">
-            <h2>Adicionar Pontuação</h2>
+            <h2><i class="fas fa-plus-circle"></i> Adicionar Pontuação</h2>
             <div class="card">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="event">Evento/Prova:</label>
+                        <label for="event"><i class="fas fa-calendar-alt"></i> Evento/Prova:</label>
                         <select id="event">
                             <option value="">Selecione um evento</option>
-                            <!-- Será preenchido via JavaScript -->
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="team">Equipe:</label>
+                        <label for="team"><i class="fas fa-users"></i> Equipe:</label>
                         <select id="team">
                             <option value="">Selecione uma equipe</option>
-                            <!-- Será preenchido via JavaScript -->
                         </select>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="points">Pontos:</label>
+                        <label for="points"><i class="fas fa-star"></i> Pontos:</label>
                         <input type="number" id="points" min="1" placeholder="Quantidade de pontos">
                     </div>
                     <div class="form-group">
-                        <label for="reason">Motivo/Detalhes:</label>
+                        <label for="reason"><i class="fas fa-comment"></i> Motivo/Detalhes:</label>
                         <input type="text" id="reason" placeholder="Detalhes da pontuação">
                     </div>
                 </div>
-                <button onclick="addPoints()">Registrar Pontuação</button>
+                <button onclick="addPoints()"><i class="fas fa-save"></i> Registrar Pontuação</button>
+            </div>
+            
+            <!-- Visualização Pública da Classificação -->
+            <div class="card">
+                <div class="card-header">
+                    <span><i class="fas fa-trophy"></i> Classificação Atual</span>
+                    <small>Atualiza automaticamente</small>
+                </div>
+                <div class="ranking" id="publicRanking">
+                    <!-- Será preenchido via JavaScript -->
+                </div>
             </div>
         </div>
         
         <!-- Dashboard Tab (Admin Only) -->
         <div class="tab-content" id="dashboard-tab">
-            <h2>Dashboard Administrativo</h2>
+            <h2><i class="fas fa-tachometer-alt"></i> Dashboard Administrativo</h2>
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon primary">
@@ -719,13 +735,12 @@
             </div>
             
             <div class="categories-section">
-                <h3>Classificação por Categoria</h3>
+                <h3><i class="fas fa-layer-group"></i> Classificação por Categoria</h3>
                 
                 <!-- Categoria 1 -->
                 <div class="category-card">
                     <div class="category-header">Categoria 1 - Ensino Fundamental I (6º e 7º Anos)</div>
                     <div class="ranking" id="category1Ranking">
-                        <!-- Será preenchido via JavaScript -->
                     </div>
                 </div>
                 
@@ -733,7 +748,6 @@
                 <div class="category-card">
                     <div class="category-header">Categoria 2 - Ensino Fundamental II (8º e 9º Anos)</div>
                     <div class="ranking" id="category2Ranking">
-                        <!-- Será preenchido via JavaScript -->
                     </div>
                 </div>
                 
@@ -741,37 +755,34 @@
                 <div class="category-card">
                     <div class="category-header">Categoria 3 - Ensino Médio</div>
                     <div class="ranking" id="category3Ranking">
-                        <!-- Será preenchido via JavaScript -->
                     </div>
                 </div>
             </div>
             
             <div class="card">
                 <div class="card-header">
-                    <span>Atividades Recentes</span>
+                    <span><i class="fas fa-history"></i> Atividades Recentes</span>
                     <button class="btn-secondary" onclick="forceSync()">
                         <i class="fas fa-sync-alt"></i> Sincronizar Agora
                     </button>
                 </div>
                 <div id="recentActivities">
-                    <!-- Será preenchido via JavaScript -->
                 </div>
             </div>
         </div>
         
         <!-- Classification Tab (Admin Only) -->
         <div class="tab-content" id="classification-tab">
-            <h2>Classificação Detalhada</h2>
+            <h2><i class="fas fa-trophy"></i> Classificação Detalhada</h2>
             <div class="card">
                 <div class="ranking" id="rankingList">
-                    <!-- Será preenchido via JavaScript -->
                 </div>
             </div>
         </div>
         
         <!-- Events Tab (Admin Only) -->
         <div class="tab-content" id="events-tab">
-            <h2>Gerenciar Eventos</h2>
+            <h2><i class="fas fa-calendar-plus"></i> Gerenciar Eventos</h2>
             <div class="card">
                 <div class="card-header">
                     <span>Adicionar Novo Evento</span>
@@ -800,7 +811,7 @@
                     <label for="newEventDescription">Descrição:</label>
                     <textarea id="newEventDescription" placeholder="Descrição do evento" rows="3"></textarea>
                 </div>
-                <button onclick="addEvent()">Adicionar Evento</button>
+                <button onclick="addEvent()"><i class="fas fa-plus"></i> Adicionar Evento</button>
             </div>
             
             <div class="card">
@@ -808,14 +819,13 @@
                     <span>Eventos da Gincana</span>
                 </div>
                 <div class="events-list" id="eventsList">
-                    <!-- Será preenchido via JavaScript -->
                 </div>
             </div>
         </div>
         
         <!-- Teams Tab (Admin Only) -->
         <div class="tab-content" id="teams-tab">
-            <h2>Gerenciar Equipes</h2>
+            <h2><i class="fas fa-users-cog"></i> Gerenciar Equipes</h2>
             <div class="card">
                 <div class="card-header">
                     <span>Adicionar Nova Equipe</span>
@@ -845,7 +855,7 @@
                         <option value="3">Categoria 3 - Ensino Médio</option>
                     </select>
                 </div>
-                <button onclick="addTeam()">Adicionar Equipe</button>
+                <button onclick="addTeam()"><i class="fas fa-plus"></i> Adicionar Equipe</button>
             </div>
             
             <div class="card">
@@ -853,21 +863,19 @@
                     <span>Equipes Participantes</span>
                 </div>
                 <div class="teams-grid" id="teamsList">
-                    <!-- Será preenchido via JavaScript -->
                 </div>
             </div>
         </div>
         
         <!-- Deduct Points Tab (Admin Only) -->
         <div class="tab-content" id="deduct-points-tab">
-            <h2>Descontar Pontos</h2>
+            <h2><i class="fas fa-minus-circle"></i> Descontar Pontos</h2>
             <div class="card">
                 <div class="form-row">
                     <div class="form-group">
                         <label for="deductTeam">Equipe:</label>
                         <select id="deductTeam">
                             <option value="">Selecione uma equipe</option>
-                            <!-- Será preenchido via JavaScript -->
                         </select>
                     </div>
                     <div class="form-group">
@@ -879,7 +887,7 @@
                     <label for="deductReason">Motivo:</label>
                     <input type="text" id="deductReason" placeholder="Motivo do desconto de pontos">
                 </div>
-                <button class="btn-danger" onclick="deductPoints()">Descontar Pontos</button>
+                <button class="btn-danger" onclick="deductPoints()"><i class="fas fa-minus"></i> Descontar Pontos</button>
             </div>
         </div>
     </div>
@@ -887,7 +895,7 @@
     <!-- Admin Login Modal -->
     <div class="login-container" id="loginScreen">
         <div class="login-form">
-            <h2>Acesso Administrativo</h2>
+            <h2><i class="fas fa-lock"></i> Acesso Administrativo</h2>
             <div class="form-group">
                 <label for="username">Usuário:</label>
                 <input type="text" id="username" placeholder="Digite seu usuário">
@@ -896,18 +904,25 @@
                 <label for="password">Senha:</label>
                 <input type="password" id="password" placeholder="Digite sua senha">
             </div>
-            <button id="loginBtn">Entrar</button>
-            <div class="error-message" id="errorMessage">Usuário ou senha incorretos!</div>
+            <button id="loginBtn"><i class="fas fa-sign-in-alt"></i> Entrar</button>
+            <div class="error-message" id="errorMessage">
+                <i class="fas fa-exclamation-circle"></i> Usuário ou senha incorretos!
+            </div>
         </div>
     </div>
 
     <script>
+        // =============================================
+        // CONFIGURAÇÃO DE SINCRONIZAÇÃO SIMULTÂNEA
+        // =============================================
+        
         // Dados iniciais
         let teams = {};
         let events = [];
         let currentUser = null;
         let lastUpdateTime = 0;
         let syncInterval;
+        let isOnline = true;
         
         // Credenciais de administrador
         const adminCredentials = {
@@ -933,20 +948,33 @@
         };
         
         // Chave única para armazenamento compartilhado
-        const STORAGE_KEY = 'gincana_escolar_shared_data';
+        const STORAGE_KEY = 'gincana_escolar_shared_data_v2';
+        
+        // =============================================
+        // SISTEMA DE SINCRONIZAÇÃO MELHORADO
+        // =============================================
         
         // Carregar dados do localStorage compartilhado
         function loadData() {
             try {
+                console.log('🔍 Carregando dados...');
                 const savedData = localStorage.getItem(STORAGE_KEY);
                 if (savedData) {
                     const data = JSON.parse(savedData);
                     teams = data.teams || {};
                     events = data.events || [];
                     lastUpdateTime = data.lastUpdateTime || 0;
+                    console.log('✅ Dados carregados:', { 
+                        teams: Object.keys(teams).length, 
+                        events: events.length,
+                        lastUpdate: new Date(lastUpdateTime).toLocaleTimeString()
+                    });
+                } else {
+                    console.log('📝 Nenhum dado salvo encontrado, inicializando...');
+                    initializeSampleData();
                 }
             } catch (error) {
-                console.error('Erro ao carregar dados:', error);
+                console.error('❌ Erro ao carregar dados:', error);
                 initializeSampleData();
             }
             updateUI();
@@ -958,16 +986,40 @@
                 const data = {
                     teams: teams,
                     events: events,
-                    lastUpdateTime: Date.now()
+                    lastUpdateTime: Date.now(),
+                    savedBy: currentUser?.username || 'public',
+                    timestamp: new Date().toISOString()
                 };
+                
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                lastUpdateTime = data.lastUpdateTime;
+                
+                console.log('💾 Dados salvos:', {
+                    time: new Date().toLocaleTimeString(),
+                    user: data.savedBy,
+                    teams: Object.keys(teams).length
+                });
                 
                 // Disparar evento customizado para notificar outras abas/janelas
                 window.dispatchEvent(new CustomEvent('gincanaDataUpdated', {
-                    detail: { timestamp: Date.now() }
+                    detail: { 
+                        timestamp: Date.now(),
+                        source: 'saveData'
+                    }
                 }));
+                
+                // Também dispara um evento de storage (para outras abas)
+                window.dispatchEvent(new StorageEvent('storage', {
+                    key: STORAGE_KEY,
+                    newValue: JSON.stringify(data),
+                    oldValue: localStorage.getItem(STORAGE_KEY),
+                    storageArea: localStorage,
+                    url: window.location.href
+                }));
+                
             } catch (error) {
-                console.error('Erro ao salvar dados:', error);
+                console.error('❌ Erro ao salvar dados:', error);
+                showConnectionError();
             }
         }
         
@@ -978,41 +1030,82 @@
                 if (savedData) {
                     const data = JSON.parse(savedData);
                     if (data.lastUpdateTime > lastUpdateTime) {
+                        console.log('🔄 Atualização detectada!', {
+                            anterior: new Date(lastUpdateTime).toLocaleTimeString(),
+                            nova: new Date(data.lastUpdateTime).toLocaleTimeString()
+                        });
+                        
                         // Dados foram atualizados por outra instância
                         teams = data.teams || {};
                         events = data.events || {};
                         lastUpdateTime = data.lastUpdateTime;
                         updateUI();
                         showUpdateNotification();
+                        updateConnectionStatus(true);
                     }
                 }
             } catch (error) {
-                console.error('Erro ao verificar atualizações:', error);
+                console.error('❌ Erro ao verificar atualizações:', error);
+                updateConnectionStatus(false);
             }
         }
         
-        // Mostrar notificação de atualização
+        // Sistema de notificação de atualização
         function showUpdateNotification() {
             const notification = document.getElementById('updateNotification');
+            notification.innerHTML = '<i class="fas fa-sync-alt"></i> Dados atualizados!';
             notification.style.display = 'block';
+            
             setTimeout(() => {
                 notification.style.display = 'none';
             }, 3000);
         }
         
+        // Sistema de status de conexão
+        function updateConnectionStatus(connected) {
+            const statusDot = document.querySelector('.status-dot');
+            const connectionText = document.getElementById('connectionText');
+            
+            if (connected) {
+                statusDot.style.background = 'var(--success)';
+                connectionText.textContent = 'Sincronizado';
+                isOnline = true;
+            } else {
+                statusDot.style.background = 'var(--danger)';
+                connectionText.textContent = 'Offline';
+                isOnline = false;
+            }
+        }
+        
+        function showConnectionError() {
+            const notification = document.getElementById('updateNotification');
+            notification.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro de conexão!';
+            notification.style.background = 'var(--danger)';
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+                notification.style.background = 'var(--info)';
+            }, 3000);
+        }
+        
         // Forçar sincronização manual
         function forceSync() {
+            console.log('🔄 Forçando sincronização...');
             checkForUpdates();
             showUpdateNotification();
         }
         
         // Iniciar sistema de sincronização
         function startSync() {
-            // Verificar atualizações a cada 2 segundos
-            syncInterval = setInterval(checkForUpdates, 2000);
+            console.log('🚀 Iniciando sistema de sincronização...');
+            
+            // Verificar atualizações a cada 1 segundo (mais rápido)
+            syncInterval = setInterval(checkForUpdates, 1000);
             
             // Ouvir eventos de outras abas/janelas
             window.addEventListener('gincanaDataUpdated', function(event) {
+                console.log('📡 Evento de atualização recebido:', event.detail);
                 if (event.detail.timestamp > lastUpdateTime) {
                     checkForUpdates();
                 }
@@ -1021,6 +1114,7 @@
             // Ouvir eventos de storage (outras abas)
             window.addEventListener('storage', function(event) {
                 if (event.key === STORAGE_KEY && event.newValue) {
+                    console.log('💽 Evento de storage recebido de outra aba');
                     try {
                         const data = JSON.parse(event.newValue);
                         if (data.lastUpdateTime > lastUpdateTime) {
@@ -1029,26 +1123,50 @@
                             lastUpdateTime = data.lastUpdateTime;
                             updateUI();
                             showUpdateNotification();
+                            updateConnectionStatus(true);
                         }
                     } catch (error) {
-                        console.error('Erro ao processar atualização:', error);
+                        console.error('❌ Erro ao processar atualização:', error);
                     }
                 }
             });
+            
+            // Verificar online/offline
+            window.addEventListener('online', function() {
+                console.log('🌐 Conexão restaurada');
+                updateConnectionStatus(true);
+                checkForUpdates();
+            });
+            
+            window.addEventListener('offline', function() {
+                console.log('📴 Conexão perdida');
+                updateConnectionStatus(false);
+            });
+            
+            // Verificação inicial
+            updateConnectionStatus(navigator.onLine);
         }
         
         // Parar sistema de sincronização
         function stopSync() {
             if (syncInterval) {
                 clearInterval(syncInterval);
+                console.log('🛑 Sistema de sincronização parado');
             }
         }
+        
+        // =============================================
+        // INTERFACE DO USUÁRIO
+        // =============================================
         
         // Atualizar a interface do usuário
         function updateUI() {
             // Atualizar dropdowns de eventos e equipes
             updateEventDropdown();
             updateTeamDropdowns();
+            
+            // Atualizar classificação pública
+            updatePublicRanking();
             
             // Atualizar estatísticas (apenas para admin)
             if (currentUser) {
@@ -1074,31 +1192,58 @@
             }
         }
         
+        // Atualizar classificação pública
+        function updatePublicRanking() {
+            const publicRankingElement = document.getElementById('publicRanking');
+            publicRankingElement.innerHTML = '';
+            
+            // Ordenar equipes por pontuação
+            const sortedTeams = Object.entries(teams)
+                .map(([id, team]) => ({ id, ...team }))
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 5); // Mostrar apenas top 5
+            
+            if (sortedTeams.length === 0) {
+                publicRankingElement.innerHTML = '<p style="padding: 1rem; text-align: center; color: #666;">Nenhuma pontuação ainda</p>';
+                return;
+            }
+            
+            sortedTeams.forEach(team => {
+                const div = document.createElement('div');
+                div.className = 'ranking-item';
+                div.innerHTML = `
+                    <span class="ranking-team">${team.name}</span>
+                    <span class="ranking-score">${team.score} pts</span>
+                `;
+                publicRankingElement.appendChild(div);
+            });
+        }
+        
+        // Restante das funções de UI permanecem as mesmas...
+        // [Manter todas as outras funções de UI do código anterior]
+        
+        // =============================================
+        // FUNÇÕES PRINCIPAIS (mantidas do código anterior)
+        // =============================================
+        
         // Atualizar classificações por categoria
         function updateCategoryRankings() {
-            // Categoria 1 - Ensino Fundamental I (6º e 7º Anos)
             updateCategoryRanking('1', 'category1Ranking');
-            
-            // Categoria 2 - Ensino Fundamental II (8º e 9º Anos)
             updateCategoryRanking('2', 'category2Ranking');
-            
-            // Categoria 3 - Ensino Médio
             updateCategoryRanking('3', 'category3Ranking');
         }
         
-        // Atualizar ranking de uma categoria específica
         function updateCategoryRanking(categoryId, elementId) {
             const rankingElement = document.getElementById(elementId);
             rankingElement.innerHTML = '';
             
-            // Filtrar equipes da categoria
             const categoryTeams = Object.entries(teams)
                 .filter(([id, team]) => team.category === categoryId)
                 .map(([id, team]) => ({ id, ...team }))
                 .sort((a, b) => b.score - a.score);
             
             if (categoryTeams.length === 0) {
-                rankingElement.innerHTML = '<p>Nenhuma equipe nesta categoria.</p>';
+                rankingElement.innerHTML = '<p style="padding: 1rem; text-align: center; color: #666;">Nenhuma equipe</p>';
                 return;
             }
             
@@ -1113,7 +1258,6 @@
             });
         }
         
-        // Atualizar dropdown de eventos
         function updateEventDropdown() {
             const eventSelect = document.getElementById('event');
             eventSelect.innerHTML = '<option value="">Selecione um evento</option>';
@@ -1126,7 +1270,6 @@
             });
         }
         
-        // Atualizar dropdowns de equipes
         function updateTeamDropdowns() {
             const teamSelects = [
                 document.getElementById('team'),
@@ -1147,7 +1290,6 @@
             });
         }
         
-        // Calcular total de pontos distribuídos
         function calculateTotalPoints() {
             let total = 0;
             for (const teamId in teams) {
@@ -1156,12 +1298,10 @@
             return total;
         }
         
-        // Atualizar ranking detalhado (apenas admin)
         function updateRanking() {
             const rankingListElement = document.getElementById('rankingList');
             rankingListElement.innerHTML = '';
             
-            // Ordenar equipes por pontuação
             const sortedTeams = Object.entries(teams)
                 .map(([id, team]) => ({ id, ...team }))
                 .sort((a, b) => b.score - a.score);
@@ -1175,7 +1315,6 @@
                     <span class="ranking-score">${team.score} pontos</span>
                 `;
                 
-                // Adicionar evento de clique para mostrar detalhes
                 div.addEventListener('click', function() {
                     showTeamDetails(team.id);
                 });
@@ -1184,9 +1323,7 @@
             });
         }
         
-        // Mostrar detalhes da equipe (apenas admin)
         function showTeamDetails(teamId) {
-            // Remover detalhes anteriores
             const existingDetails = document.querySelector('.team-details');
             if (existingDetails) {
                 existingDetails.remove();
@@ -1194,7 +1331,6 @@
             
             const team = teams[teamId];
             
-            // Criar elemento de detalhes
             const detailsDiv = document.createElement('div');
             detailsDiv.className = 'team-details active';
             detailsDiv.innerHTML = `
@@ -1226,17 +1362,14 @@
                 ` : '<p>Esta equipe ainda não recebeu pontos.</p>'}
             `;
             
-            // Adicionar após o ranking
             const rankingList = document.getElementById('rankingList');
             rankingList.parentNode.insertBefore(detailsDiv, rankingList.nextSibling);
         }
         
-        // Atualizar atividades recentes (apenas admin)
         function updateRecentActivities() {
             const recentActivitiesElement = document.getElementById('recentActivities');
             recentActivitiesElement.innerHTML = '';
             
-            // Combinar eventos de pontos e deduções
             const allActivities = [];
             
             Object.keys(teams).forEach(teamId => {
@@ -1249,14 +1382,12 @@
                 });
             });
             
-            // Ordenar por timestamp
             allActivities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
             
-            // Pegar as últimas 5 atividades
             const recentActivities = allActivities.slice(0, 5);
             
             if (recentActivities.length === 0) {
-                recentActivitiesElement.innerHTML = '<p>Nenhuma atividade registrada ainda.</p>';
+                recentActivitiesElement.innerHTML = '<p style="padding: 1rem; text-align: center; color: #666;">Nenhuma atividade registrada</p>';
                 return;
             }
             
@@ -1264,8 +1395,8 @@
                 const div = document.createElement('div');
                 div.className = 'activity-item';
                 const pointsText = activity.type === 'deduction' ? 
-                    `perdeu <strong>${activity.points} pontos</strong>` : 
-                    `recebeu <strong>${activity.points} pontos</strong>`;
+                    `perdeu <strong style="color: var(--danger);">${activity.points} pontos</strong>` : 
+                    `recebeu <strong style="color: var(--success);">${activity.points} pontos</strong>`;
                     
                 div.innerHTML = `
                     <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #eee;">
@@ -1280,16 +1411,14 @@
             });
         }
         
-        // Atualizar lista de eventos (apenas admin)
         function updateEventsList() {
             const eventsListElement = document.getElementById('eventsList');
             eventsListElement.innerHTML = '';
             
-            const systemEvents = events.filter(e => e.isSystem);
             const customEvents = events.filter(e => !e.isSystem);
             
             if (customEvents.length === 0) {
-                eventsListElement.innerHTML = '<p>Nenhum evento cadastrado ainda.</p>';
+                eventsListElement.innerHTML = '<p style="padding: 1rem; text-align: center; color: #666;">Nenhum evento cadastrado</p>';
                 return;
             }
             
@@ -1310,13 +1439,12 @@
             });
         }
         
-        // Atualizar lista de equipes (apenas admin)
         function updateTeamsList() {
             const teamsListElement = document.getElementById('teamsList');
             teamsListElement.innerHTML = '';
             
             if (Object.keys(teams).length === 0) {
-                teamsListElement.innerHTML = '<p>Nenhuma equipe cadastrada ainda.</p>';
+                teamsListElement.innerHTML = '<p style="padding: 1rem; text-align: center; color: #666;">Nenhuma equipe cadastrada</p>';
                 return;
             }
             
@@ -1339,7 +1467,6 @@
             });
         }
         
-        // Adicionar pontos via formulário (disponível para todos)
         function addPoints() {
             const eventSelect = document.getElementById('event');
             const teamSelect = document.getElementById('team');
@@ -1356,17 +1483,14 @@
                 return;
             }
             
-            // Encontrar o evento
             const event = events.find(e => e.id === eventId);
             if (!event) {
                 alert('Evento não encontrado.');
                 return;
             }
             
-            // Adicionar pontos à equipe
             teams[teamId].score += points;
             
-            // Registrar no histórico da equipe
             teams[teamId].pointsHistory.push({
                 type: 'addition',
                 event: eventId,
@@ -1376,25 +1500,21 @@
                 timestamp: new Date().toLocaleString()
             });
             
-            // Salvar e atualizar
             saveData();
             updateUI();
             
-            // Mostrar mensagem de sucesso
             const successMessage = document.getElementById('successMessage');
             successMessage.style.display = 'block';
             setTimeout(() => {
                 successMessage.style.display = 'none';
             }, 3000);
             
-            // Limpar formulário
             eventSelect.value = '';
             teamSelect.value = '';
             pointsInput.value = '';
             reasonInput.value = '';
         }
         
-        // Descontar pontos (apenas admin)
         function deductPoints() {
             const teamSelect = document.getElementById('deductTeam');
             const pointsInput = document.getElementById('deductPoints');
@@ -1409,16 +1529,13 @@
                 return;
             }
             
-            // Verificar se a equipe tem pontos suficientes
             if (teams[teamId].score < points) {
                 alert('A equipe não possui pontos suficientes para este desconto.');
                 return;
             }
             
-            // Descontar pontos da equipe
             teams[teamId].score -= points;
             
-            // Registrar no histórico da equipe
             teams[teamId].pointsHistory.push({
                 type: 'deduction',
                 points: points,
@@ -1426,24 +1543,20 @@
                 timestamp: new Date().toLocaleString()
             });
             
-            // Salvar e atualizar
             saveData();
             updateUI();
             
-            // Mostrar mensagem de aviso
             const warningMessage = document.getElementById('warningMessage');
             warningMessage.style.display = 'block';
             setTimeout(() => {
                 warningMessage.style.display = 'none';
             }, 3000);
             
-            // Limpar formulário
             teamSelect.value = '';
             pointsInput.value = '';
             reasonInput.value = '';
         }
         
-        // Adicionar evento (apenas admin)
         function addEvent() {
             const nameInput = document.getElementById('newEventName');
             const pointsInput = document.getElementById('newEventPoints');
@@ -1462,7 +1575,6 @@
                 return;
             }
             
-            // Criar novo evento
             const newEvent = {
                 id: 'event_' + Date.now(),
                 name: name,
@@ -1474,12 +1586,9 @@
             };
             
             events.push(newEvent);
-            
-            // Salvar e atualizar
             saveData();
             updateUI();
             
-            // Limpar formulário
             nameInput.value = '';
             pointsInput.value = '';
             locationInput.value = '';
@@ -1489,7 +1598,6 @@
             alert('Evento adicionado com sucesso!');
         }
         
-        // Excluir evento (apenas admin)
         function deleteEvent(eventId) {
             if (confirm('Tem certeza que deseja excluir este evento?')) {
                 events = events.filter(e => e.id !== eventId);
@@ -1499,7 +1607,6 @@
             }
         }
         
-        // Adicionar equipe (apenas admin)
         function addTeam() {
             const nameInput = document.getElementById('newTeamName');
             const colorSelect = document.getElementById('newTeamColor');
@@ -1514,7 +1621,6 @@
                 return;
             }
             
-            // Verificar se já existe uma equipe com este nome
             const existingTeam = Object.values(teams).find(team => 
                 team.name.toLowerCase() === name.toLowerCase()
             );
@@ -1524,7 +1630,6 @@
                 return;
             }
             
-            // Criar nova equipe
             const teamId = 'team_' + Date.now();
             teams[teamId] = {
                 name: name,
@@ -1534,11 +1639,9 @@
                 pointsHistory: []
             };
             
-            // Salvar e atualizar
             saveData();
             updateUI();
             
-            // Limpar formulário
             nameInput.value = '';
             colorSelect.value = 'red';
             categorySelect.value = '1';
@@ -1546,7 +1649,6 @@
             alert('Equipe adicionada com sucesso!');
         }
         
-        // Excluir equipe (apenas admin)
         function deleteTeam(teamId) {
             if (confirm('Tem certeza que deseja excluir esta equipe? Todos os pontos serão perdidos.')) {
                 delete teams[teamId];
@@ -1556,7 +1658,10 @@
             }
         }
         
-        // Sistema de login
+        // =============================================
+        // SISTEMA DE LOGIN E INTERAÇÃO
+        // =============================================
+        
         document.getElementById('adminLoginBtn').addEventListener('click', function() {
             document.getElementById('loginScreen').style.display = 'flex';
         });
@@ -1566,14 +1671,12 @@
             const password = document.getElementById('password').value;
             
             if (username === adminCredentials.username && password === adminCredentials.password) {
-                // Login bem-sucedido
                 currentUser = { username: username, role: 'admin' };
                 document.getElementById('loginScreen').style.display = 'none';
                 document.getElementById('userStatus').textContent = 'Administrador';
                 document.getElementById('adminLoginBtn').style.display = 'none';
                 document.getElementById('logoutBtn').style.display = 'block';
                 
-                // Mostrar abas de administrador
                 document.querySelectorAll('.admin-only').forEach(el => {
                     el.style.display = 'block';
                 });
@@ -1581,60 +1684,46 @@
                 loadData();
                 startSync();
             } else {
-                // Login falhou
                 document.getElementById('errorMessage').style.display = 'block';
             }
         });
         
-        // Permitir login com Enter
         document.getElementById('password').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 document.getElementById('loginBtn').click();
             }
         });
         
-        // Logout
         document.getElementById('logoutBtn').addEventListener('click', function() {
             currentUser = null;
             document.getElementById('userStatus').textContent = 'Visitante';
             document.getElementById('adminLoginBtn').style.display = 'block';
             document.getElementById('logoutBtn').style.display = 'none';
             
-            // Esconder abas de administrador
             document.querySelectorAll('.admin-only').forEach(el => {
                 el.style.display = 'none';
             });
             
-            // Parar sincronização
             stopSync();
-            
-            // Voltar para a aba de adicionar pontos
             switchTab('add-points');
         });
         
-        // Sistema de abas
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', () => {
-                // Verificar se é uma aba de admin e se o usuário está logado
                 if (tab.classList.contains('admin-only') && !currentUser) {
                     document.getElementById('loginScreen').style.display = 'flex';
                     return;
                 }
                 
-                // Remover classe active de todas as abas
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 
-                // Adicionar classe active à aba clicada
                 tab.classList.add('active');
-                
-                // Mostrar o conteúdo correspondente
                 const tabId = tab.getAttribute('data-tab');
                 document.getElementById(`${tabId}-tab`).classList.add('active');
             });
         });
         
-        // Função para trocar de aba
         function switchTab(tabName) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -1643,10 +1732,14 @@
             document.getElementById(`${tabName}-tab`).classList.add('active');
         }
         
-        // Inicializar dados de exemplo se não houver dados salvos
+        // =============================================
+        // DADOS INICIAIS
+        // =============================================
+        
         function initializeSampleData() {
             if (!localStorage.getItem(STORAGE_KEY)) {
-                // Criar eventos padrão
+                console.log('🎯 Inicializando dados de exemplo...');
+                
                 events = [
                     {
                         id: 'event_quiz',
@@ -1677,18 +1770,16 @@
                     }
                 ];
                 
-                // Criar equipes padrão por categoria
                 teams = {
-                    // Categoria 1 - Ensino Fundamental I (6º e 7º Anos)
                     'team_6ano': {
                         name: '6º Ano',
                         color: 'red',
                         category: '1',
                         score: 320,
                         pointsHistory: [
-                            { type: 'addition', event: 'event_quiz', eventName: 'Quiz Cultural', points: 120, reason: 'Segundo lugar', timestamp: '2023-10-15 15:30' },
-                            { type: 'addition', event: 'event_corrida', eventName: 'Corrida de Saco', points: 100, reason: 'Vencedora', timestamp: '2023-10-15 14:00' },
-                            { type: 'addition', event: 'event_danca', eventName: 'Competição de Dança', points: 100, reason: 'Participação', timestamp: '2023-10-15 16:45' }
+                            { type: 'addition', event: 'event_quiz', eventName: 'Quiz Cultural', points: 120, reason: 'Segundo lugar', timestamp: new Date().toLocaleString() },
+                            { type: 'addition', event: 'event_corrida', eventName: 'Corrida de Saco', points: 100, reason: 'Vencedora', timestamp: new Date().toLocaleString() },
+                            { type: 'addition', event: 'event_danca', eventName: 'Competição de Dança', points: 100, reason: 'Participação', timestamp: new Date().toLocaleString() }
                         ]
                     },
                     'team_7ano': {
@@ -1697,22 +1788,20 @@
                         category: '1',
                         score: 280,
                         pointsHistory: [
-                            { type: 'addition', event: 'event_quiz', eventName: 'Quiz Cultural', points: 150, reason: 'Primeiro lugar', timestamp: '2023-10-15 15:30' },
-                            { type: 'addition', event: 'event_corrida', eventName: 'Corrida de Saco', points: 80, reason: 'Segundo lugar', timestamp: '2023-10-15 14:00' },
-                            { type: 'addition', event: 'event_danca', eventName: 'Competição de Dança', points: 50, reason: 'Participação', timestamp: '2023-10-15 16:45' }
+                            { type: 'addition', event: 'event_quiz', eventName: 'Quiz Cultural', points: 150, reason: 'Primeiro lugar', timestamp: new Date().toLocaleString() },
+                            { type: 'addition', event: 'event_corrida', eventName: 'Corrida de Saco', points: 80, reason: 'Segundo lugar', timestamp: new Date().toLocaleString() },
+                            { type: 'addition', event: 'event_danca', eventName: 'Competição de Dança', points: 50, reason: 'Participação', timestamp: new Date().toLocaleString() }
                         ]
                     },
-                    
-                    // Categoria 2 - Ensino Fundamental II (8º e 9º Anos)
                     'team_8ano': {
                         name: '8º Ano',
                         color: 'green',
                         category: '2',
                         score: 450,
                         pointsHistory: [
-                            { type: 'addition', event: 'event_quiz', eventName: 'Quiz Cultural', points: 150, reason: 'Primeiro lugar', timestamp: '2023-10-15 15:30' },
-                            { type: 'addition', event: 'event_corrida', eventName: 'Corrida de Saco', points: 100, reason: 'Vencedora', timestamp: '2023-10-15 14:00' },
-                            { type: 'addition', event: 'event_danca', eventName: 'Competição de Dança', points: 200, reason: 'Segundo lugar', timestamp: '2023-10-15 16:45' }
+                            { type: 'addition', event: 'event_quiz', eventName: 'Quiz Cultural', points: 150, reason: 'Primeiro lugar', timestamp: new Date().toLocaleString() },
+                            { type: 'addition', event: 'event_corrida', eventName: 'Corrida de Saco', points: 100, reason: 'Vencedora', timestamp: new Date().toLocaleString() },
+                            { type: 'addition', event: 'event_danca', eventName: 'Competição de Dança', points: 200, reason: 'Segundo lugar', timestamp: new Date().toLocaleString() }
                         ]
                     },
                     'team_9ano': {
@@ -1721,22 +1810,20 @@
                         category: '2',
                         score: 380,
                         pointsHistory: [
-                            { type: 'addition', event: 'event_danca', eventName: 'Competição de Dança', points: 200, reason: 'Primeiro lugar', timestamp: '2023-10-15 16:45' },
-                            { type: 'addition', event: 'event_quiz', eventName: 'Quiz Cultural', points: 150, reason: 'Participação', timestamp: '2023-10-15 15:30' },
-                            { type: 'addition', event: 'event_corrida', eventName: 'Corrida de Saco', points: 30, reason: 'Participação', timestamp: '2023-10-15 14:00' }
+                            { type: 'addition', event: 'event_danca', eventName: 'Competição de Dança', points: 200, reason: 'Primeiro lugar', timestamp: new Date().toLocaleString() },
+                            { type: 'addition', event: 'event_quiz', eventName: 'Quiz Cultural', points: 150, reason: 'Participação', timestamp: new Date().toLocaleString() },
+                            { type: 'addition', event: 'event_corrida', eventName: 'Corrida de Saco', points: 30, reason: 'Participação', timestamp: new Date().toLocaleString() }
                         ]
                     },
-                    
-                    // Categoria 3 - Ensino Médio
                     'team_1anoA': {
                         name: '1º Ano A',
                         color: 'purple',
                         category: '3',
                         score: 295,
                         pointsHistory: [
-                            { type: 'addition', event: 'event_quiz', eventName: 'Quiz Cultural', points: 100, reason: 'Segundo lugar', timestamp: '2023-10-15 15:30' },
-                            { type: 'addition', event: 'event_danca', eventName: 'Competição de Dança', points: 150, reason: 'Menção honrosa', timestamp: '2023-10-15 16:45' },
-                            { type: 'addition', event: 'event_corrida', eventName: 'Corrida de Saco', points: 45, reason: 'Participação', timestamp: '2023-10-15 14:00' }
+                            { type: 'addition', event: 'event_quiz', eventName: 'Quiz Cultural', points: 100, reason: 'Segundo lugar', timestamp: new Date().toLocaleString() },
+                            { type: 'addition', event: 'event_danca', eventName: 'Competição de Dança', points: 150, reason: 'Menção honrosa', timestamp: new Date().toLocaleString() },
+                            { type: 'addition', event: 'event_corrida', eventName: 'Corrida de Saco', points: 45, reason: 'Participação', timestamp: new Date().toLocaleString() }
                         ]
                     },
                     'team_1anoB': {
@@ -1745,9 +1832,9 @@
                         category: '3',
                         score: 270,
                         pointsHistory: [
-                            { type: 'addition', event: 'event_quiz', eventName: 'Quiz Cultural', points: 80, reason: 'Participação', timestamp: '2023-10-15 15:30' },
-                            { type: 'addition', event: 'event_corrida', eventName: 'Corrida de Saco', points: 90, reason: 'Terceiro lugar', timestamp: '2023-10-15 14:00' },
-                            { type: 'addition', event: 'event_danca', eventName: 'Competição de Dança', points: 100, reason: 'Participação', timestamp: '2023-10-15 16:45' }
+                            { type: 'addition', event: 'event_quiz', eventName: 'Quiz Cultural', points: 80, reason: 'Participação', timestamp: new Date().toLocaleString() },
+                            { type: 'addition', event: 'event_corrida', eventName: 'Corrida de Saco', points: 90, reason: 'Terceiro lugar', timestamp: new Date().toLocaleString() },
+                            { type: 'addition', event: 'event_danca', eventName: 'Competição de Dança', points: 100, reason: 'Participação', timestamp: new Date().toLocaleString() }
                         ]
                     },
                     'team_2anoA': {
@@ -1756,9 +1843,9 @@
                         category: '3',
                         score: 410,
                         pointsHistory: [
-                            { type: 'addition', event: 'event_quiz', eventName: 'Quiz Cultural', points: 120, reason: 'Terceiro lugar', timestamp: '2023-10-15 15:30' },
-                            { type: 'addition', event: 'event_corrida', eventName: 'Corrida de Saco', points: 90, reason: 'Participação', timestamp: '2023-10-15 14:00' },
-                            { type: 'addition', event: 'event_danca', eventName: 'Competição de Dança', points: 200, reason: 'Primeiro lugar', timestamp: '2023-10-15 16:45' }
+                            { type: 'addition', event: 'event_quiz', eventName: 'Quiz Cultural', points: 120, reason: 'Terceiro lugar', timestamp: new Date().toLocaleString() },
+                            { type: 'addition', event: 'event_corrida', eventName: 'Corrida de Saco', points: 90, reason: 'Participação', timestamp: new Date().toLocaleString() },
+                            { type: 'addition', event: 'event_danca', eventName: 'Competição de Dança', points: 200, reason: 'Primeiro lugar', timestamp: new Date().toLocaleString() }
                         ]
                     },
                     'team_2anoB': {
@@ -1767,9 +1854,9 @@
                         category: '3',
                         score: 350,
                         pointsHistory: [
-                            { type: 'addition', event: 'event_quiz', eventName: 'Quiz Cultural', points: 110, reason: 'Participação', timestamp: '2023-10-15 15:30' },
-                            { type: 'addition', event: 'event_corrida', eventName: 'Corrida de Saco', points: 140, reason: 'Vencedora', timestamp: '2023-10-15 14:00' },
-                            { type: 'addition', event: 'event_danca', eventName: 'Competição de Dança', points: 100, reason: 'Participação', timestamp: '2023-10-15 16:45' }
+                            { type: 'addition', event: 'event_quiz', eventName: 'Quiz Cultural', points: 110, reason: 'Participação', timestamp: new Date().toLocaleString() },
+                            { type: 'addition', event: 'event_corrida', eventName: 'Corrida de Saco', points: 140, reason: 'Vencedora', timestamp: new Date().toLocaleString() },
+                            { type: 'addition', event: 'event_danca', eventName: 'Competição de Dança', points: 100, reason: 'Participação', timestamp: new Date().toLocaleString() }
                         ]
                     },
                     'team_3ano': {
@@ -1778,9 +1865,9 @@
                         category: '3',
                         score: 390,
                         pointsHistory: [
-                            { type: 'addition', event: 'event_quiz', eventName: 'Quiz Cultural', points: 130, reason: 'Participação', timestamp: '2023-10-15 15:30' },
-                            { type: 'addition', event: 'event_corrida', eventName: 'Corrida de Saco', points: 110, reason: 'Segundo lugar', timestamp: '2023-10-15 14:00' },
-                            { type: 'addition', event: 'event_danca', eventName: 'Competição de Dança', points: 150, reason: 'Terceiro lugar', timestamp: '2023-10-15 16:45' }
+                            { type: 'addition', event: 'event_quiz', eventName: 'Quiz Cultural', points: 130, reason: 'Participação', timestamp: new Date().toLocaleString() },
+                            { type: 'addition', event: 'event_corrida', eventName: 'Corrida de Saco', points: 110, reason: 'Segundo lugar', timestamp: new Date().toLocaleString() },
+                            { type: 'addition', event: 'event_danca', eventName: 'Competição de Dança', points: 150, reason: 'Terceiro lugar', timestamp: new Date().toLocaleString() }
                         ]
                     }
                 };
@@ -1789,8 +1876,12 @@
             }
         }
         
-        // Inicializar
+        // =============================================
+        // INICIALIZAÇÃO
+        // =============================================
+        
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎉 Sistema de Gincana Escolar Iniciado!');
             initializeSampleData();
             loadData();
             startSync();
