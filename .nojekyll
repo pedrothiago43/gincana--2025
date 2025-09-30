@@ -1,1 +1,13 @@
+# Navegue até a pasta do seu projeto
+cd gincana-escolar
 
+# Crie o arquivo .nojekyll (vazio)
+touch .nojekyll
+
+# Ou no Windows:
+echo. > .nojekyll
+
+# Adicione e faça commit
+git add .nojekyll
+git commit -m "Adiciona .nojekyll para desativar processamento Jekyll"
+git push origin main
