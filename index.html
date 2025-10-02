@@ -648,42 +648,6 @@
     display: none;
     z-index: 1001;
     animation: slideIn 0.3s ease-out;
-}/* ============================================= */
-/* BOTÃO DE SINCRONIZAÇÃO - ADICIONAR NO FINAL DO CSS */
-/* ============================================= */
-
-.sync-button {
-    background: var(--secondary);
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s;
-}
-
-.sync-button:hover {
-    background: #1e87e0;
-    transform: scale(1.05);
-}
-
-.sync-button.loading {
-    background: var(--warning);
-    cursor: not-allowed;
-}
-
-.sync-button.loading i {
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-            }
         }
     </style>
 </head>
